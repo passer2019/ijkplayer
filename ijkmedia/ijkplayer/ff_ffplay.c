@@ -3210,8 +3210,8 @@ static int read_thread(void *arg)
 
     is->realtime = is_realtime(ic);
 
-	//av_opt_set(ic->priv_data, "preset", "ultrafast", 0);
-	//av_opt_set(ic->priv_data, "tune", "stillimage,fastdecode,zerolatency",0);
+	av_opt_set(ic->priv_data, "preset", "ultrafast", 0);
+	av_opt_set(ic->priv_data, "tune", "stillimage,fastdecode,zerolatency",0);
 
     av_dump_format(ic, 0, is->filename, 0);
 
