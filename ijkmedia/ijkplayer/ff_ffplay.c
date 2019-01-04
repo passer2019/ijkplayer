@@ -1283,7 +1283,7 @@ static double compute_target_delay(FFPlayer *ffp, double delay, VideoState *is)
 
     return delay;
 }
-
+/*
 static double vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
     if (vp->serial == nextvp->serial) {
         double duration = nextvp->pts - vp->pts;
@@ -1294,6 +1294,10 @@ static double vp_duration(VideoState *is, Frame *vp, Frame *nextvp) {
     } else {
         return 0.0;
     }
+}
+*/
+static double vp_duration(VideoState*is,Frame*vp,Frame*nextvp) {
+     return vp->duration;
 }
 
 static void update_video_pts(VideoState *is, double pts, int64_t pos, int serial) {
