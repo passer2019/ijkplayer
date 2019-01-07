@@ -3061,7 +3061,7 @@ static int is_realtime(AVFormatContext *s)
     return 0;
 }
 
-static CheckFpsOrTbr(AVFormatContext * paramIC) {
+static void CheckFpsOrTbr(AVFormatContext * paramIC) {
 	AVFormatContext * ic = paramIC;
 	int i;
 	//纠正帧率
