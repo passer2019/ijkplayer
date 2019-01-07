@@ -2185,7 +2185,7 @@ static int ffplay_video_thread(void *arg)
     double duration;
     int ret;
     AVRational tb = is->video_st->time_base;
-    AVRational frame_rate = av_guess_frame_rate(is->ic, is->video_st, NULL);
+    //AVRational frame_rate = av_guess_frame_rate(is->ic, is->video_st, NULL);
     int64_t dst_pts = -1;
     int64_t last_dst_pts = -1;
     int retry_convert_image = 0;
@@ -2319,7 +2319,7 @@ static int ffplay_video_thread(void *arg)
                 is->frame_last_filter_delay = 0;
             tb = av_buffersink_get_time_base(filt_out);
 #endif
-            duration = (frame_rate.num && frame_rate.den ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0);
+            //duration = (frame_rate.num && frame_rate.den ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0);
             pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
             ret = queue_picture(ffp, frame, pts, duration, frame->pkt_pos, is->viddec.pkt_serial);
             av_frame_unref(frame);
@@ -3061,6 +3061,29 @@ static int is_realtime(AVFormatContext *s)
     return 0;
 }
 
+static CheckFpsOrTbr(AVFormatContext * paramIC) {
+	AVFormatContext * ic = paramIC;
+	int i;
+	//纠正帧率
+	for(int i = 0; i < ic->nb_streams; i++) {
+		AVStream *st = ic->streams[i];
+		if( st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO ) {
+			//
+			double fps = av_q2d(st->avg_frame_rate);
+			double tbr = av_q2d(st->r_frame_rate);
+			if(fps < 20.0 || fps > 30.0) {
+				st->avg_frame_rate.num = 25;
+				st->avg_frame_rate.den = 1;
+			}
+			if(tbr < 20.0 || tbr > 30.0) {
+				st->r_frame_rate.num = 25;
+				st->r_frame_rate.den = 1;
+			}
+		}
+		
+	}	
+}
+
 /* this thread gets the stream from the disk or the network */
 static int read_thread(void *arg)
 {
@@ -3217,6 +3240,16 @@ static int read_thread(void *arg)
 	//av_opt_set(ic->priv_data, "preset", "ultrafast", 0);
 	//av_opt_set(ic->priv_data, "tune", "stillimage,fastdecode,zerolatency",0);
 
+	
+
+//	        if (fps)
+//            print_fps(av_q2d(st->avg_frame_rate), tbr || tbn || tbc ? "fps, " : "fps");
+//        if (tbr)
+//            print_fps(av_q2d(st->r_frame_rate), tbn || tbc ? "tbr, " : "tbr");
+
+	CheckFpsOrTbr(ic);
+
+
     av_dump_format(ic, 0, is->filename, 0);
 
     int video_stream_count = 0;
@@ -3277,6 +3310,7 @@ static int read_thread(void *arg)
 #endif
 
     /* open the streams */
+	CheckFpsOrTbr(ic);
     if (st_index[AVMEDIA_TYPE_AUDIO] >= 0) {
         stream_component_open(ffp, st_index[AVMEDIA_TYPE_AUDIO]);
     } else {
