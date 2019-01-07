@@ -2185,7 +2185,7 @@ static int ffplay_video_thread(void *arg)
     double duration;
     int ret;
     AVRational tb = is->video_st->time_base;
-    //AVRational frame_rate = av_guess_frame_rate(is->ic, is->video_st, NULL);
+    AVRational frame_rate = av_guess_frame_rate(is->ic, is->video_st, NULL);
     int64_t dst_pts = -1;
     int64_t last_dst_pts = -1;
     int retry_convert_image = 0;
@@ -2295,7 +2295,7 @@ static int ffplay_video_thread(void *arg)
             last_format = frame->format;
             last_serial = is->viddec.pkt_serial;
             last_vfilter_idx = is->vfilter_idx;
-            //frame_rate = av_buffersink_get_frame_rate(filt_out);
+            frame_rate = av_buffersink_get_frame_rate(filt_out);
             SDL_UnlockMutex(ffp->vf_mutex);
         }
 
@@ -2319,7 +2319,7 @@ static int ffplay_video_thread(void *arg)
                 is->frame_last_filter_delay = 0;
             tb = av_buffersink_get_time_base(filt_out);
 #endif
-            //duration = (frame_rate.num && frame_rate.den ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0);
+            duration = (frame_rate.num && frame_rate.den ? av_q2d((AVRational){frame_rate.den, frame_rate.num}) : 0);
             pts = (frame->pts == AV_NOPTS_VALUE) ? NAN : frame->pts * av_q2d(tb);
             ret = queue_picture(ffp, frame, pts, duration, frame->pkt_pos, is->viddec.pkt_serial);
             av_frame_unref(frame);
